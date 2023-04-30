@@ -1,5 +1,7 @@
 package com.sureshmicro.customer;
+import com.sureshmicro.client.fraud.FraudCheckReponse;
 
+import com.sureshmicro.client.fraud.FraudClient;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -12,6 +14,8 @@ public class CustomerService
     private final RestTemplate restTemplate;
 
     private  final CustomerRepository customerRepository;
+
+    private final FraudClient fraudClient;
     public void registerCustomer(CustomerRegistrationRequest request) {
 
         Customer customer = Customer.builder()
@@ -20,9 +24,12 @@ public class CustomerService
                 .email(request.email())
                 .build();
         customerRepository.saveAndFlush(customer);
-        FraudCheckReponse fraudCheckReponse = restTemplate.getForObject("http://FRAUD/api/v1/fraud-check/{customerId}",
-                FraudCheckReponse.class,
-                customer.getId());
+       // FraudCheckReponse fraudCheckReponse = restTemplate.getForObject("http://FRAUD/api/v1/fraud-check/{customerId}",
+         //       FraudCheckReponse.class,
+           //     customer.getId()); changed to feign client
+
+        FraudCheckReponse fraudCheckReponse =fraudClient.isFraudster(customer.getId());
+
         if (fraudCheckReponse.isFraudster()) {
             throw new IllegalStateException("validation failed");
 
