@@ -1,18 +1,32 @@
 package com.sureshmicro.customer;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Service
-public record CustomerService(CustomerRepository customerRepository) {
-    public void registerCustomer(CustomerRegistrationRequest request){
+@AllArgsConstructor
+public class CustomerService
+{
 
-        Customer customer =Customer.builder()
+    private final RestTemplate restTemplate;
+
+    private  final CustomerRepository customerRepository;
+    public void registerCustomer(CustomerRegistrationRequest request) {
+
+        Customer customer = Customer.builder()
                 .firstName(request.firstName())
                 .lastName(request.lastName())
                 .email(request.email())
                 .build();
-        customerRepository.save(customer);
+        customerRepository.saveAndFlush(customer);
+        FraudCheckReponse fraudCheckReponse = restTemplate.getForObject("http://localhost:8081/api/v1/fraud-check/{customerId}",
+                FraudCheckReponse.class,
+                customer.getId());
+        if (fraudCheckReponse.isFraudster()) {
+            throw new IllegalStateException("validation failed");
 
 
+        }
     }
 }
