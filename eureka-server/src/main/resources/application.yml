@@ -8,3 +8,6 @@ eureka:
 spring:
   application:
     name: Eureka-Server
+
+  zipkin:
+    base-url: http://localhost:50154

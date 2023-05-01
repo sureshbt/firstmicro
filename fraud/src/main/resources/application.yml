@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: fraud
+  zipkin:
+    base-url: http://localhost:50154
 
   datasource:
    password: password

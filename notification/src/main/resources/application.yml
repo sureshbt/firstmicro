@@ -3,6 +3,8 @@ server:
 spring:
   application:
     name: notification
+  zipkin:
+    base-url: http://localhost:50154
   datasource:
     password: password
     url: jdbc:postgresql://localhost:5432/notification
