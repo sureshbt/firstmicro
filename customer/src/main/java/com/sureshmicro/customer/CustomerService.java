@@ -1,4 +1,5 @@
 package com.sureshmicro.customer;
+import com.sureshmicro.amqp.RabbitMQMessageProducer;
 import com.sureshmicro.client.fraud.FraudCheckReponse;
 
 import com.sureshmicro.client.fraud.FraudClient;
@@ -20,6 +21,7 @@ public class CustomerService
     private final FraudClient fraudClient;
 
     private final NotificationClient notificationClient;
+    private final RabbitMQMessageProducer rabbitMQMessageProducer;
 
     public void registerCustomer(CustomerRegistrationRequest request) {
 
@@ -38,14 +40,14 @@ public class CustomerService
         if (fraudCheckReponse.isFraudster()) {
             throw new IllegalStateException("validation failed");
         }
-        notificationClient.sendNotification(
-                new NotificationRequest(
-                        customer.getId(),
-                        customer.getEmail(),
-                        String.format("Hi %s, welcome to kirikalan magic show...",
-                                customer.getFirstName())
-                )
+        NotificationRequest notificationRequest = new NotificationRequest(
+                customer.getId(),
+                customer.getEmail(),
+                String.format("Hi %s, welcome to kirikalan magic show...",
+                        customer.getFirstName())
         );
+        rabbitMQMessageProducer.publish(notificationRequest,
+                "internal.exchange","internal.notification.routing-key");
 
     }
 }
